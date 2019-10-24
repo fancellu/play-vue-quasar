@@ -1,0 +1,40 @@
+@(content: Html)
+<html>
+    <head>
+            <!-- Do you need Material Icons? -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet" type="text/css">
+
+        <link href="https://cdn.jsdelivr.net/npm/animate.css@@^3.5.2/animate.min.css" rel="stylesheet">
+
+        <link href="https://cdn.jsdelivr.net/npm/quasar@@^1.0.0-beta/dist/quasar.min.css" rel="stylesheet" type="text/css">
+
+        <script src="https://cdn.jsdelivr.net/npm/axios@@0.18.0/dist/axios.min.js"></script>
+        <style>
+            .dialog-bg-red .q-dialog__inner > .q-card > * {
+                background-color: #FF0000;
+                color: #fff ;
+            }
+        </style>
+    </head>
+
+    <body class="no-scroll">
+
+        <script src="https://cdn.jsdelivr.net/npm/quasar@@^1.0.0-beta.18/dist/quasar.ie.polyfills.umd.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@@latest/dist/vue.min.js"></script>
+
+        <script>
+                window.quasarConfig = {
+                    loadingBar: { // we don't want the default ajax-bar, else we get 2!
+                        skipHijack: true // set this
+                    }
+                }
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/quasar@@^1.0.0-beta.18/dist/quasar.umd.min.js"></script>
+
+        <script src="https://cdn.jsdelivr.net/npm/quasar@@^1.0.0-beta.18/dist/icon-set/fontawesome-v5.umd.min.js"></script>
+
+        @content
+    </body>
+</html>

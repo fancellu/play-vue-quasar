@@ -1,0 +1,249 @@
+
+@()
+
+
+@quasar{
+
+    <div id="q-app">
+
+        <q-layout view="hHh lpR fFf">
+
+            <q-ajax-bar position="bottom" size="4px"></q-ajax-bar>
+
+            <q-header elevated class="bg-primary text-white">
+                <q-toolbar color="primary">
+
+                    <q-toolbar-title>
+                        UI Running Quasar v{{ version }}
+                    </q-toolbar-title>
+
+                    <q-btn @@click="window.location='/logout'" color="primary"  icon-right="exit_to_app"
+                    label="You are logged in as Mr Smith"></q-btn>
+
+                </q-toolbar>
+                <q-tabs v-model="tab" align="left">
+                    <q-tab name="main" label="Main" ></q-tab>
+                    <q-tab name="audit" label="Audit" ></q-tab>
+                </q-tabs>
+            </q-header>
+
+            <q-page-container>
+
+                <q-page>
+
+                    <q-tab-panels animated v-model="tab">
+                        <q-tab-panel name="main">
+
+                            <div class="row">
+                                <q-input class="on-left" filled v-model="identityId" label="IDENTITY ID" maxlength="20"></q-input>
+
+                                <q-checkbox v-model="confirmDelete" label="Confirm Delete"/>
+                            </div>
+
+                            <div class="q-py-md q-gutter-y-md column items-start">
+                                <q-btn-group push>
+                                    <q-btn push color="primary" icon="info" label="A Read" @@click="a_read"  :disabled="identityId==''"></q-btn>
+                                    <q-btn push color="red" icon="delete" label="A Delete" @@click="a_delete"  :disabled="identityId==''"></q-btn>
+                                </q-btn-group>
+
+                            </div>
+
+                            <div style="max-width: 100%; height:200px">
+                                <q-input readonly filled
+                                v-model="output"
+                                type="textarea"></q-input>
+                            </div>
+
+                        </q-tab-panel>
+
+                        <q-tab-panel name="audit">
+                           <q-table
+                                 dense
+                                 :data="auditdata"
+                                 :columns="auditcolumns"
+                                 row-key="id"
+                                 :rows-per-page-options="[]"
+                                 :pagination.sync="auditpagination">
+                                     <template class="row" #top="props">
+
+                                         <q-field borderless>
+                                                 <q-btn label="RECENT" icon="refresh" color="primary" @@click="onAuditRecent"></q-btn>
+                                         </q-field>
+
+                                         <q-input class="q-pl-md" filled v-model="identityId" label="IDENTITY ID" maxlength="20">
+                                             <template #append>
+                                                 <q-btn :disabled="identityId==''"  color="primary" round dense @@click="onAuditIdentityId" icon="search" ></q-btn>
+                                             </template>
+                                         </q-input>
+                                     </template>
+                                       <template #body-cell-identity_id="props">
+                                           <q-td :props="props">
+                                               {{ props.row.identity_id }}
+                                                   <q-menu
+                                                   touch-position
+                                                   context-menu content-class="bg-primary text-white"
+                                                   ><q-list style="min-width: 100px">
+                                                       <q-item color="primary" @@click="identityId=props.row.identity_id;myvue.onAuditIdentityId()" clickable v-close-popup>
+                                                           <q-item-section avatar>
+                                                             <q-icon name="search"></q-icon>
+                                                           </q-item-section>
+                                                           <q-item-section>SEARCH</q-item-section>
+                                                       </q-item></q-list>
+                                                   </q-menu>
+                                           </q-td>
+                                       </template>
+                                 </q-table>
+                        </q-tab-panel>
+                    </q-tab-panels>
+                </q-page>
+            </q-page-container>
+        </q-layout>
+
+    </div>
+
+    <script type="text/javascript">
+
+            let datetimeoptions = { weekday: 'long', year: 'numeric', month: 'long',
+                day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+
+            let myvue=new Vue({
+                el: '#q-app',
+                data: function () {
+                    return {
+                        identityId: '',
+                        requestId: '',
+                        output: '',
+                        latestStatus: false,
+                        username: 'TODO',
+                        version: Quasar.version,
+                        confirmDelete: false,
+                        tab: 'main',
+                        auditpagination: {
+                            page: 1,
+                            rowsPerPage: 10
+                        },
+                        auditcolumns :[
+                            {
+                                name: 'id',
+                                label: 'ID',
+                                field: 'id'
+                            },
+                            {
+                                name: 'created',
+                                label: 'Created',
+                                field: 'created',
+                                sortable: true,
+                                format: (val, row) => {
+                                    let date=new Date(val)
+                                    return date.toLocaleDateString('en-GB',datetimeoptions)
+                                }
+                            },
+                            {
+                                name: 'identity_id',
+                                label: 'Identity ID',
+                                field: 'identity_id',
+                                sortable: true
+                            },
+                            {
+                                name: 'action',
+                                label: 'Action',
+                                field: 'action',
+                                sortable: true
+                            }
+                        ],
+                        auditdata :[
+
+
+                        ],
+
+                    }
+                },
+                mounted () {
+                    this.$nextTick(function () {
+                        this.onAuditRecent()
+                    })
+
+                },
+                methods: {
+                    onAuditRecent: function() {
+                        axios.get('/audit').then(json=>{
+                            this.auditdata=json.data;
+
+                        })
+                    },
+                    onAuditIdentityId: function() {
+                        axios.get('/audit/'+this.identityId).then(json=>{
+                        this.auditdata=json.data;
+
+                    })
+                    },
+                    do_get: function(url) {
+                        axios.get(url)
+                                .then(json=>{
+                            console.log(json);
+                        this.output="Audit Id:"+json.headers.audit_rowid+" data="+JSON.stringify(json.data);
+
+                    })
+                    .catch(function (error) {
+                           myvue.handle_error(error)
+                        });
+                    },
+                    confirm_func: function(func) {
+                        if (!this.confirmDelete){
+                            func();
+                            return
+                        }
+
+                        this.$q.dialog({
+                            title: 'Alert',
+                            message: 'Are you sure you want to delete?',
+                            className: 'dialog-bg-red',
+                            cancel: true,
+                            ok: {
+                                color: 'text-white',
+                                flat: true
+                            },
+                            cancel: {
+                                color: 'text-white',
+                                flat: true
+                            }
+                        }).onOk(() => {
+                            console.log('OK')
+                            func();
+                    }).onCancel(() => {
+                            console.log('Cancel')
+                        })
+                    },
+                    a_delete: function() {
+                        this.confirm_func( () => this.do_get("/a/delete/"+this.identityId) );
+                    }
+                    ,
+                    a_read: function() {
+                        this.do_get("/a/"+this.identityId)
+                    }
+                    ,
+                    handle_error: function(error){
+                        console.log(error);
+                        if (error.response){
+                            myvue.notify_error(error.response.data || "Could not find response data");
+                        } else if (error.request) {
+                            myvue.notify_error("No response received")
+                        } else {
+                            myvue.notify_error("Bad request")
+                        }
+                    },
+                    notify_error: function(str) {
+                        console.error(str)
+                        this.$q.notify({
+                            message: str.substring(0,800),
+                            timeout: 0,
+                            closeBtn: 'dismiss',
+                            color: 'red',
+                            icon: 'error',
+                            multiline: true,
+                        })
+                    }
+                }
+            })
+    </script>
+}
