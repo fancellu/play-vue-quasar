@@ -7,6 +7,10 @@ https://quasar.dev/
 This is here to show how simple it is to create a nice looking UI with Quasar,
 and no need for node.js in your project
 
+## Screenshot
+
+![Screenshot](https://github.com/fancellu/play-vue-quasar/blob/master/screenshot.png)
+
 ## To run
 
 `sbt run`
